@@ -59,3 +59,12 @@ The scenarios run in sequence and use accounts and credentials expected by the c
 ## Test Reports
 
 Mocha's default reporter prints test results to the terminal, along with response details logged by the tests. The current setup does not generate a separate HTML or JSON report file.
+
+## Attachments
+<img width="1105" height="1600" alt="image-1" src="https://github.com/user-attachments/assets/55596c39-139e-47dc-ac45-76ac2aaf7880" />
+<img width="1113" height="1600" alt="image-2" src="https://github.com/user-attachments/assets/2eb9d379-36f9-4642-8b32-b590e3f79f7c" />
+<img width="1600" height="850" alt="image-3" src="https://github.com/user-attachments/assets/3dc69041-2acd-4b13-9e6e-cd2492077f1c" />
+
+
+
+
