@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "generate:tokens": "node scripts/generate-tokens.js",
     "test": "mocha tests/dmoney.spec.js --timeout 30000"
   },
   "keywords": [],

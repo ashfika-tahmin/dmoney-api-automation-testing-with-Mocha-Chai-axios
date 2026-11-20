@@ -1,22 +1,32 @@
 import 'dotenv/config';
 import axios from 'axios';
 import { expect } from 'chai';
+import { updateTokenInEnv } from '../scripts/token-env.js';
 
 const baseUrl = process.env.BASE_URL;
-let accessToken;
 let customer1Id;
 let customer2Id;
 let agentId;
 let merchantId;
-let systemToken;
-let agentToken;
-let customer1Token;
-let customer2Token;
+
+// Tokens are regenerated during each run; do not reuse values from an older .env.
+for (const name of ['ADMIN_TOKEN', 'SYSTEM_TOKEN', 'AGENT_TOKEN', 'CUSTOMER1_TOKEN', 'CUSTOMER2_TOKEN']) {
+    process.env[name] = '';
+}
 
 const customerSuffix = Date.now().toString().slice(-8);
 const agentPhoneNumber = `017${customerSuffix}`;
 
 describe('dMoney Integration Testing', function () {
+
+    before('validate API configuration', function () {
+        if (!baseUrl) {
+            throw new Error('BASE_URL must be set in .env before running the tests.');
+        }
+        if (!process.env['X-AUTH-SECRET-KEY']) {
+            throw new Error('X-AUTH-SECRET-KEY must be set in .env before running the tests.');
+        }
+    });
 
     it('Check API Base URL', async function () {
 
@@ -27,7 +37,6 @@ describe('dMoney Integration Testing', function () {
     });
 
     it('Verify admin can login with correct credentials', async function () {
-
         const response = await axios.post(`${baseUrl}/user/login`, {
             email: 'admin@dmoney.com',
             password: '1234'
@@ -37,11 +46,13 @@ describe('dMoney Integration Testing', function () {
         console.log('Status code:', response.status);
 
         expect(response.status).to.equal(200);
+        expect(response.data.message).to.equal('Login successful');
         expect(response.data.token).to.exist;
+        await updateTokenInEnv('ADMIN_TOKEN', response.data.token);
+    });
 
-        accessToken = response.data.token;
-
-        console.log('Admin Access Token Stored Successfully');
+    it('Verify admin token is configured', async function () {
+        expect(process.env.ADMIN_TOKEN, 'Set ADMIN_TOKEN in .env').to.be.a('string').and.not.empty;
 
     });
 
@@ -56,7 +67,7 @@ describe('dMoney Integration Testing', function () {
             role: 'Customer'
         }, {
             headers: {
-                Authorization: `Bearer ${accessToken}`,
+                Authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
                 'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
             }
         });
@@ -82,7 +93,7 @@ describe('dMoney Integration Testing', function () {
             { status: 'active' },
             {
                 headers: {
-                    Authorization: `Bearer ${accessToken}`,
+                    Authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
                     'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
                 }
             }
@@ -109,7 +120,7 @@ it('Verify admin can create Customer 2 successfully', async function () {
         role: 'Customer'
     }, {
         headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
             'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
         }
     });
@@ -136,7 +147,7 @@ it('Verify admin can activate Customer 2 successfully', async function () {
         { status: 'active' },
         {
             headers: {
-                Authorization: `Bearer ${accessToken}`,
+                Authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
                 'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
             }
         }
@@ -163,7 +174,7 @@ it('Verify admin can create Agent successfully', async function () {
         role: 'Agent'
     }, {
         headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
             'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
         }
     });
@@ -190,7 +201,7 @@ it('Verify admin can activate Agent successfully', async function () {
         { status: 'active' },
         {
             headers: {
-                Authorization: `Bearer ${accessToken}`,
+                Authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
                 'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
             }
         }
@@ -216,7 +227,7 @@ it('Verify admin can create Merchant successfully', async function () {
         role: 'Merchant'
     }, {
         headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
             'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
         }
     });
@@ -243,7 +254,7 @@ it('Verify admin can activate Merchant successfully', async function () {
         { status: 'active' },
         {
             headers: {
-                Authorization: `Bearer ${accessToken}`,
+                Authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
                 'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
             }
         }
@@ -259,7 +270,6 @@ it('Verify admin can activate Merchant successfully', async function () {
 });
 
 it('Verify System can login successfully with correct credentials', async function () {
-
     const response = await axios.post(`${baseUrl}/user/login`, {
         email: 'system@dmoney.com',
         password: '1234'
@@ -270,9 +280,9 @@ it('Verify System can login successfully with correct credentials', async functi
 
     expect(response.status).to.equal(200);
     expect(response.data.message).to.equal('Login successful');
+    expect(response.data.token).to.exist;
 
-    systemToken = response.data.token;
-    expect(systemToken).to.exist;
+    await updateTokenInEnv('SYSTEM_TOKEN', response.data.token);
 
 });
 it('Verify System can deposit 5000 Tk to Agent successfully', async function () {
@@ -285,7 +295,7 @@ it('Verify System can deposit 5000 Tk to Agent successfully', async function () 
             amount: 5000
         }, {
             headers: {
-                Authorization: `Bearer ${systemToken}`,
+                Authorization: `Bearer ${process.env.SYSTEM_TOKEN}`,
                 'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
             }
         });
@@ -328,15 +338,12 @@ it('Verify Agent can verify OTP successfully', async function () {
         otp: '0000'
     });
 
-    console.log('Agent OTP verification response:', response.data);
-    console.log('Status code:', response.status);
-
     expect(response.status).to.equal(200);
+    expect(response.data.token).to.exist;
 
-    agentToken = response.data.token;
-    expect(agentToken).to.exist;
-
-    console.log('Stored agentToken:', agentToken);
+    await updateTokenInEnv('AGENT_TOKEN', response.data.token);
+    console.log('Agent OTP verification response (saved as AGENT_TOKEN):', response.data);
+    console.log('Status code:', response.status);
 
 });
 
@@ -348,7 +355,7 @@ it('Verify Agent can deposit 2000 Tk to Customer 1 successfully', async function
         amount: 2000
     }, {
         headers: {
-            Authorization: `Bearer ${agentToken}`,
+            Authorization: `Bearer ${process.env.AGENT_TOKEN}`,
             'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
         }
     });
@@ -384,15 +391,12 @@ it('Verify Customer 1 can verify OTP successfully', async function () {
         otp: '0000'
     });
 
-    console.log('Customer 1 OTP verification response:', response.data);
-    console.log('Status code:', response.status);
-
     expect(response.status).to.equal(200);
+    expect(response.data.token).to.exist;
 
-    customer1Token = response.data.token;
-    expect(customer1Token).to.exist;
-
-    console.log('Stored customer1Token:', customer1Token);
+    await updateTokenInEnv('CUSTOMER1_TOKEN', response.data.token);
+    console.log('Customer 1 OTP verification response (saved as CUSTOMER1_TOKEN):', response.data);
+    console.log('Status code:', response.status);
 
 });
 
@@ -404,7 +408,7 @@ it('Verify Customer 1 can send money to Customer 2 successfully', async function
         amount: 1000
     }, {
         headers: {
-            Authorization: `Bearer ${customer1Token}`,
+            Authorization: `Bearer ${process.env.CUSTOMER1_TOKEN}`,
             'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
         }
     });
@@ -441,15 +445,12 @@ it('Verify Customer 2 can verify OTP successfully', async function () {
         otp: '0000'
     });
 
-    console.log('Customer 2 OTP verification response:', response.data);
-    console.log('Status code:', response.status);
-
     expect(response.status).to.equal(200);
+    expect(response.data.token).to.exist;
 
-    customer2Token = response.data.token;
-    expect(customer2Token).to.exist;
-
-    console.log('Stored customer2Token:', customer2Token);
+    await updateTokenInEnv('CUSTOMER2_TOKEN', response.data.token);
+    console.log('Customer 2 OTP verification response (saved as CUSTOMER2_TOKEN):', response.data);
+    console.log('Status code:', response.status);
 
 });
 
@@ -461,7 +462,7 @@ it('Verify Customer 2 can cashout 500 Tk from Agent successfully', async functio
         amount: 500
     }, {
         headers: {
-            Authorization: `Bearer ${customer2Token}`,
+            Authorization: `Bearer ${process.env.CUSTOMER2_TOKEN}`,
             'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
         }
     });
@@ -483,7 +484,7 @@ it('Verify Customer 2 can pay 400 Tk to Merchant successfully', async function (
         amount: 400
     }, {
         headers: {
-            Authorization: `Bearer ${customer2Token}`,
+            Authorization: `Bearer ${process.env.CUSTOMER2_TOKEN}`,
             'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
         }
     });
@@ -527,7 +528,7 @@ it('Verify admin cannot create a user with already registered email', async func
         role: 'Customer'
     }, {
         headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${process.env.ADMIN_TOKEN}`,
             'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
         },
         validateStatus: () => true
@@ -566,7 +567,7 @@ it('Verify System cannot deposit to a non-existing account', async function () {
         amount: 5000
     }, {
         headers: {
-            Authorization: `Bearer ${systemToken}`,
+            Authorization: `Bearer ${process.env.SYSTEM_TOKEN}`,
             'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
         },
         validateStatus: () => true
@@ -588,7 +589,7 @@ it('Verify Customer 1 cannot send money without X-AUTH-SECRET-KEY', async functi
         amount: 1000
     }, {
         headers: {
-            Authorization: `Bearer ${customer1Token}`
+            Authorization: `Bearer ${process.env.CUSTOMER1_TOKEN}`
         },
         validateStatus: () => true
     });
@@ -608,7 +609,7 @@ it('Verify Customer 2 cannot make payment with insufficient balance', async func
         amount: 2000
     }, {
         headers: {
-            Authorization: `Bearer ${customer2Token}`,
+            Authorization: `Bearer ${process.env.CUSTOMER2_TOKEN}`,
             'X-AUTH-SECRET-KEY': process.env['X-AUTH-SECRET-KEY']
         },
         validateStatus: () => true
