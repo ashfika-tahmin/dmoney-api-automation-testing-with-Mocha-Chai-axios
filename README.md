@@ -76,6 +76,12 @@ Negative cases run at the end of the suite:
 
 ### Reference screenshots
 
-<img width="1105" height="1600" alt="Test output screenshot 1" src="https://github.com/user-attachments/assets/55596c39-139e-47dc-ac45-76ac2aaf7880" />
-<img width="1113" height="1600" alt="Test output screenshot 2" src="https://github.com/user-attachments/assets/2eb9d379-36f9-4642-8b32-b590e3f79f7c" />
-<img width="1600" height="850" alt="Test output screenshot 3" src="https://github.com/user-attachments/assets/3dc69041-2acd-4b13-9e6e-cd2492077f1c" />
+<img width="1147" height="764" alt="Screenshot 2026-11-20 at 9 23 42 PM" src="https://github.com/user-attachments/assets/51d5f964-b594-482d-bbba-4b8713d49929" />
+<img width="804" height="745" alt="Screenshot 2026-11-20 at 9 24 12 PM" src="https://github.com/user-attachments/assets/9ddf820c-d150-480d-82ff-f7a643c9a5a4" />
+<img width="1154" height="754" alt="Screenshot 2026-11-20 at 9 24 41 PM" src="https://github.com/user-attachments/assets/ae372d7b-9b4a-44b0-98b7-f4619a3f5b0f" />
+<img width="1150" height="757" alt="Screenshot 2026-11-20 at 9 25 02 PM" src="https://github.com/user-attachments/assets/a8586a35-2046-406e-9838-da12bd33a7ee" />
+<img width="1149" height="727" alt="Screenshot 2026-11-20 at 9 25 16 PM" src="https://github.com/user-attachments/assets/169c2376-435c-4b90-b4e2-0a087db15266" />
+
+
+
+
